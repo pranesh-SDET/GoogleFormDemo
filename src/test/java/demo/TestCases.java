@@ -44,14 +44,16 @@ public class TestCases {
         System.out.println("Navigated to: " + formUrl);
 
         // 2. Fill in "Crio Learner" in the 1st text box (Name)
-        By nameInputLocator = By.xpath("//div[@role='listitem'][.//span[contains(text(),'Name')]]//input[@type='text'] | (//input[@type='text'])[1]");
+        // Matches any question container containing "Name" and targets its input field
+        By nameInputLocator = By.xpath("(//input[@type='text'])[1] | //div[@role='listitem'][.//*[text()='Name']]//input");
         Wrappers.enterText(driver, nameInputLocator, "Crio Learner");
         System.out.println("Entered Name: Crio Learner");
 
         // 3. Write down "I want to be the best QA Engineer! <epoch_time>"
         String currentEpoch = Wrappers.getCurrentEpochTime();
         String reasonMessage = "I want to be the best QA Engineer! " + currentEpoch;
-        By reasonTextAreaLocator = By.xpath("//div[@role='listitem'][.//span[contains(text(),'Why are you practicing Automation?')]]//textarea | //textarea");
+        // Resilient locator targeting either textarea or text input for question 2
+        By reasonTextAreaLocator = By.xpath("//div[@role='listitem'][.//*[contains(text(),'Why are you practicing Automation')]]//textarea | //textarea | (//input[@type='text'])[2]");
         Wrappers.enterText(driver, reasonTextAreaLocator, reasonMessage);
         System.out.println("Entered Reason: " + reasonMessage);
 
@@ -96,7 +98,7 @@ public class TestCases {
         // 9. Fetch and print the success message
         By successMessageLocator = By.xpath("//div[contains(text(),'Thanks for your response')] | //div[contains(@class,'freebirdFormviewerViewResponseConfirmationMessage')]");
         String confirmationText = Wrappers.getElementText(driver, successMessageLocator);
-        System.out.println("Confirmation Message: " + confirmationText);
+        System.out.println(confirmationText);
 
         System.out.println("testCase01 execution completed.");
     }
