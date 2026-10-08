@@ -35,7 +35,7 @@ public class TestCases {
     }
 
     @Test
-    public void testCase01() {
+    public void testCase01() throws InterruptedException {
         System.out.println("Starting testCase01: Automate Google Forms submission");
 
         // 1. Navigate to Google Form
@@ -44,16 +44,14 @@ public class TestCases {
         System.out.println("Navigated to: " + formUrl);
 
         // 2. Fill in "Crio Learner" in the 1st text box (Name)
-        // Matches any question container containing "Name" and targets its input field
-        By nameInputLocator = By.xpath("(//input[@type='text'])[1] | //div[@role='listitem'][.//*[text()='Name']]//input");
+        By nameInputLocator = By.xpath("(//input[@type='text'])[1]");
         Wrappers.enterText(driver, nameInputLocator, "Crio Learner");
         System.out.println("Entered Name: Crio Learner");
 
         // 3. Write down "I want to be the best QA Engineer! <epoch_time>"
         String currentEpoch = Wrappers.getCurrentEpochTime();
         String reasonMessage = "I want to be the best QA Engineer! " + currentEpoch;
-        // Resilient locator targeting either textarea or text input for question 2
-        By reasonTextAreaLocator = By.xpath("//div[@role='listitem'][.//*[contains(text(),'Why are you practicing Automation')]]//textarea | //textarea | (//input[@type='text'])[2]");
+        By reasonTextAreaLocator = By.xpath("//textarea");
         Wrappers.enterText(driver, reasonTextAreaLocator, reasonMessage);
         System.out.println("Entered Reason: " + reasonMessage);
 
@@ -77,7 +75,7 @@ public class TestCases {
         Wrappers.selectDropdownOption(driver, dropdownLocator, "Mr");
         System.out.println("Selected dropdown option: Mr");
 
-        // 7. Dynamic past date (7 days ago) in dd/MM/yyyy
+        // 7. Dynamic past date (7 days ago)
         String pastDate = Wrappers.getPastDateFormatted(7, "dd/MM/yyyy");
         By dateInputLocator = By.xpath("//input[@type='date']");
         Wrappers.enterText(driver, dateInputLocator, pastDate);
@@ -95,7 +93,7 @@ public class TestCases {
         Wrappers.clickElement(driver, submitButtonLocator);
         System.out.println("Submitted the form");
 
-        // 9. Fetch and print the success message
+        // 9. Fetch and print the completion confirmation message
         By successMessageLocator = By.xpath("//div[contains(text(),'Thanks for your response')] | //div[contains(@class,'freebirdFormviewerViewResponseConfirmationMessage')]");
         String confirmationText = Wrappers.getElementText(driver, successMessageLocator);
         System.out.println(confirmationText);
