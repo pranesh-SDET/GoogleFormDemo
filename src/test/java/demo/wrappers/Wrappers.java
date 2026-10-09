@@ -1,100 +1,78 @@
 package demo.wrappers;
 
-import java.time.Duration;
-import java.time.Instant;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
-import org.openqa.selenium.Keys;
+import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
-import org.openqa.selenium.support.ui.ExpectedConditions;
-import org.openqa.selenium.support.ui.WebDriverWait;
 
 public class Wrappers {
 
-    private static final Duration DEFAULT_TIMEOUT = Duration.ofSeconds(10);
-
-    /**
-     * Waits for element visibility, clicks to focus, and enters text.
-     */
-    public static boolean enterText(ChromeDriver driver, By locator, String text) {
+    public static void enterText(WebDriver driver, By locator, String text) {
         try {
-            WebDriverWait wait = new WebDriverWait(driver, DEFAULT_TIMEOUT);
-            WebElement element = wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
-            element.click();
-            element.sendKeys(Keys.chord(Keys.CONTROL, "a"));
+            WebElement element = driver.findElement(locator);
+            element.clear();
             element.sendKeys(text);
-            return true;
         } catch (Exception e) {
-            System.out.println("Failed to enter text into: " + locator + " | Exception: " + e.getMessage());
-            return false;
+            e.printStackTrace();
         }
     }
 
-    /**
-     * Waits for element to be clickable and performs a click.
-     */
-    public static boolean clickElement(ChromeDriver driver, By locator) {
+    public static void radioButton(ChromeDriver driver, String radioButtonText) {
         try {
-            WebDriverWait wait = new WebDriverWait(driver, DEFAULT_TIMEOUT);
-            WebElement element = wait.until(ExpectedConditions.elementToBeClickable(locator));
+            WebElement element = driver.findElement(By.xpath("//span[contains(text(),'" + radioButtonText + "')]"));
             element.click();
-            return true;
         } catch (Exception e) {
-            try {
-                WebElement element = driver.findElement(locator);
-                JavascriptExecutor js = (JavascriptExecutor) driver;
-                js.executeScript("arguments[0].click();", element);
-                return true;
-            } catch (Exception jsEx) {
-                System.out.println("Failed to click element: " + locator + " | Exception: " + jsEx.getMessage());
-                return false;
+            e.printStackTrace();
+        }
+    }
+
+    public static void checkBox(ChromeDriver driver, String checkBoxText) {
+        try {
+            WebElement element = driver.findElement(By.xpath("//span[contains(text(),'" + checkBoxText + "')]"));
+            element.click();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void dropDownClickByLoop(List<WebElement> elements, String dropDownText) {
+        try {
+            for (WebElement element : elements) {
+                if (element.getText().trim().equalsIgnoreCase(dropDownText)) {
+                    element.click();
+                    break;
+                }
             }
-        }
-    }
-
-    /**
-     * Opens Google Forms custom dropdown and selects option.
-     */
-    public static boolean selectDropdownOption(ChromeDriver driver, By dropdownLocator, String optionText) {
-        try {
-            WebDriverWait wait = new WebDriverWait(driver, DEFAULT_TIMEOUT);
-            WebElement dropdown = wait.until(ExpectedConditions.elementToBeClickable(dropdownLocator));
-            dropdown.click();
-
-            Thread.sleep(500); // Allow dropdown menu animation
-
-            By optionLocator = By.xpath("//div[@role='option']//span[text()='" + optionText + "'] | //div[@role='option' and @data-value='" + optionText + "']");
-            WebElement option = wait.until(ExpectedConditions.visibilityOfElementLocated(optionLocator));
-            option.click();
-            return true;
         } catch (Exception e) {
-            System.out.println("Failed to select dropdown option: " + optionText + " | Exception: " + e.getMessage());
-            return false;
+            e.printStackTrace();
         }
     }
 
-    public static String getCurrentEpochTime() {
-        return String.valueOf(Instant.now().getEpochSecond());
-    }
-
-    public static String getPastDateFormatted(int daysAgo, String pattern) {
-        LocalDate pastDate = LocalDate.now().minusDays(daysAgo);
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(pattern);
-        return pastDate.format(formatter);
-    }
-
-    public static String getElementText(ChromeDriver driver, By locator) {
+    public static void clickOnElement(ChromeDriver driver, WebElement element) {
         try {
-            WebDriverWait wait = new WebDriverWait(driver, DEFAULT_TIMEOUT);
-            WebElement element = wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
-            return element.getText();
+            JavascriptExecutor js = (JavascriptExecutor) driver;
+            js.executeScript("arguments[0].click();", element);
         } catch (Exception e) {
-            System.out.println("Failed to fetch text from: " + locator + " | Exception: " + e.getMessage());
-            return "";
+            e.printStackTrace();
         }
+    }
+
+    public static String getdateSevenDaysAgo(int days) {
+        LocalDate currentDate = LocalDate.now();
+        LocalDate dateMinus7Days = currentDate.minusDays(days);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        String formattedDate = dateMinus7Days.format(formatter);
+        System.out.println(formattedDate);
+        return formattedDate;
+    }
+
+    public static String getEpochTimeAsString() {
+        long epochTime = System.currentTimeMillis() / 1000;
+        return String.valueOf(epochTime);
     }
 }

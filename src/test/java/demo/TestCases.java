@@ -1,20 +1,100 @@
 package demo;
 
+import java.time.Duration;
+import java.util.List;
+import java.util.logging.Level;
+
 import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeDriverService;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.logging.LogType;
 import org.openqa.selenium.logging.LoggingPreferences;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
 import org.testng.annotations.AfterTest;
 import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 
-import java.util.logging.Level;
 import demo.wrappers.Wrappers;
 
 public class TestCases {
     ChromeDriver driver;
+
+    @Test
+    public void testCase01() throws InterruptedException {
+        String formUrl = "https://docs.google.com/forms/d/e/1FAIpQLSep9LTMntH5YqIXa5nkiPKSs283kdwitBBhXWyZdAS-e4CxBQ/viewform";
+        driver.get(formUrl);
+
+        // 1. Fill Name
+        By nameInputBox = By.xpath("//div[contains(@class,'k3kHxc')]//input | (//input[@type='text'])[1]");
+        System.out.println("wait 1");
+        Thread.sleep(2000);
+        Wrappers.enterText(driver, nameInputBox, "Crio Learner");
+
+        // 2. Fill Reason with Epoch Time
+        By practicingAutomationTextArea = By.xpath("//textarea[contains(@class,'tL9Q4c')] | //textarea");
+        String practisingAutomationText = "I want to be the best QA Engineer!";
+        String epochTimeString = Wrappers.getEpochTimeAsString();
+        Wrappers.enterText(driver, practicingAutomationTextArea, practisingAutomationText + " " + epochTimeString);
+
+        // 3. Select radio button as per automation experience
+        Thread.sleep(2000);
+        System.out.println("wait 3");
+        Wrappers.radioButton(driver, "0 - 2");
+
+        // 4. Select checkboxes for skillsets
+        Thread.sleep(2000);
+        System.out.println("wait 4");
+        Wrappers.checkBox(driver, "Java");
+        Wrappers.checkBox(driver, "Selenium");
+        Wrappers.checkBox(driver, "TestNG");
+
+        // 5. Select Dropdown option
+        System.out.println("wait 5");
+        Thread.sleep(2000);
+        WebElement dropDoWebElement = driver.findElement(By.xpath("//div[@role='listbox'] | //div[contains(@class,'DEh')]"));
+        ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView(true);", dropDoWebElement);
+        Thread.sleep(1000);
+        dropDoWebElement.click(); // Real click opens the dropdown popup
+
+        Thread.sleep(2000);
+        List<WebElement> dropDownList = driver.findElements(By.xpath("//div[@role='option']//span | //div[contains(@class,'nc')]//span"));
+        Wrappers.dropDownClickByLoop(dropDownList, "Mr");
+
+        // 6. Enter 7 days ago date
+        By dateInputBox = By.xpath("//div[contains(@class,'A6uyJd')]//input | //input[@type='date']");
+        String sevenDaysAgoDate = Wrappers.getdateSevenDaysAgo(7);
+        Thread.sleep(2000);
+        System.out.println("wait 6");
+        Wrappers.enterText(driver, dateInputBox, sevenDaysAgoDate);
+
+        // 7. Enter current time in HH:MM
+        By hourElement = By.xpath("//input[@aria-label='Hour'] | (//div[@role='listitem'][.//span[contains(text(),'time')]]//input)[1]");
+        By minElement = By.xpath("//input[@aria-label='Minute'] | (//div[@role='listitem'][.//span[contains(text(),'time')]]//input)[2]");
+        Wrappers.enterText(driver, hourElement, "07");
+        Wrappers.enterText(driver, minElement, "30");
+
+        // 8. Submit the form
+        WebElement submitBtn = driver.findElement(By.xpath("//span[text()='Submit']/ancestor::div[@role='button'] | //div[@class='lRwqcd']//div[@role='button'] | //div[@class='lRwqcd']/div"));
+        ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView(true);", submitBtn);
+        Thread.sleep(1000);
+        try {
+            submitBtn.click();
+        } catch (Exception e) {
+            Wrappers.clickOnElement(driver, submitBtn);
+        }
+
+        // 9. Fetch and verify response message
+        Thread.sleep(3000);
+        System.out.println("wait 7");
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(15));
+        By successLocator = By.xpath("//div[contains(@class,'vHW')] | //div[contains(text(),'Thanks for your response')]");
+        WebElement successMsgElement = wait.until(ExpectedConditions.visibilityOfElementLocated(successLocator));
+        System.out.println(successMsgElement.getText());
+    }
 
     @BeforeTest
     public void startBrowser() {
@@ -28,82 +108,18 @@ public class TestCases {
         options.setCapability("goog:loggingPrefs", logs);
         options.addArguments("--remote-allow-origins=*");
 
-        System.setProperty(ChromeDriverService.CHROME_DRIVER_LOG_PROPERTY, "build/chromedriver.log"); 
+        System.setProperty(ChromeDriverService.CHROME_DRIVER_LOG_PROPERTY, "build/chromedriver.log");
 
         driver = new ChromeDriver(options);
         driver.manage().window().maximize();
-    }
-
-    @Test
-    public void testCase01() throws InterruptedException {
-        System.out.println("Starting testCase01: Automate Google Forms submission");
-
-        // 1. Navigate to Google Form
-        String formUrl = "https://docs.google.com/forms/d/e/1FAIpQLSep9LTMntH5YqIXa5nkiPKSs283kdwitBBhXWyZdAS-e4CxBQ/viewform";
-        driver.get(formUrl);
-        System.out.println("Navigated to: " + formUrl);
-
-        // 2. Fill in "Crio Learner" in the 1st text box (Name)
-        By nameInputLocator = By.xpath("(//input[@type='text'])[1]");
-        Wrappers.enterText(driver, nameInputLocator, "Crio Learner");
-        System.out.println("Entered Name: Crio Learner");
-
-        // 3. Write down "I want to be the best QA Engineer! <epoch_time>"
-        String currentEpoch = Wrappers.getCurrentEpochTime();
-        String reasonMessage = "I want to be the best QA Engineer! " + currentEpoch;
-        By reasonTextAreaLocator = By.xpath("//textarea");
-        Wrappers.enterText(driver, reasonTextAreaLocator, reasonMessage);
-        System.out.println("Entered Reason: " + reasonMessage);
-
-        // 4. Select Automation Testing experience radio button ("0 - 2")
-        By experienceRadioLocator = By.xpath("//div[@role='radio' and (@data-value='0 - 2' or .//span[text()='0 - 2'])] | //span[text()='0 - 2']");
-        Wrappers.clickElement(driver, experienceRadioLocator);
-        System.out.println("Selected Experience: 0 - 2");
-
-        // 5. Select Java, Selenium and TestNG checkboxes
-        By javaCheckboxLocator = By.xpath("//div[@role='checkbox' and (@aria-label='Java' or .//span[text()='Java'])] | //span[text()='Java']");
-        By seleniumCheckboxLocator = By.xpath("//div[@role='checkbox' and (@aria-label='Selenium' or .//span[text()='Selenium'])] | //span[text()='Selenium']");
-        By testngCheckboxLocator = By.xpath("//div[@role='checkbox' and (@aria-label='TestNG' or .//span[text()='TestNG'])] | //span[text()='TestNG']");
-
-        Wrappers.clickElement(driver, javaCheckboxLocator);
-        Wrappers.clickElement(driver, seleniumCheckboxLocator);
-        Wrappers.clickElement(driver, testngCheckboxLocator);
-        System.out.println("Selected checkboxes: Java, Selenium, TestNG");
-
-        // 6. Select "Mr" from dropdown
-        By dropdownLocator = By.xpath("//div[@role='listbox'] | //div[contains(@class,'jgvuAb')] | //span[text()='Choose']");
-        Wrappers.selectDropdownOption(driver, dropdownLocator, "Mr");
-        System.out.println("Selected dropdown option: Mr");
-
-        // 7. Dynamic past date (7 days ago)
-        String pastDate = Wrappers.getPastDateFormatted(7, "dd/MM/yyyy");
-        By dateInputLocator = By.xpath("//input[@type='date']");
-        Wrappers.enterText(driver, dateInputLocator, pastDate);
-        System.out.println("Entered past date: " + pastDate);
-
-        // 8. Provide time 07:30
-        By hourInputLocator = By.xpath("//input[@aria-label='Hour' or @aria-label='hour'] | (//div[@role='listitem'][.//span[contains(text(),'time')]]//input)[1]");
-        By minuteInputLocator = By.xpath("//input[@aria-label='Minute' or @aria-label='minute'] | (//div[@role='listitem'][.//span[contains(text(),'time')]]//input)[2]");
-        Wrappers.enterText(driver, hourInputLocator, "07");
-        Wrappers.enterText(driver, minuteInputLocator, "30");
-        System.out.println("Entered Time: 07:30");
-
-        // Submit form
-        By submitButtonLocator = By.xpath("//span[text()='Submit']/ancestor::div[@role='button'] | //span[text()='Submit']");
-        Wrappers.clickElement(driver, submitButtonLocator);
-        System.out.println("Submitted the form");
-
-        // 9. Fetch and print the completion confirmation message
-        By successMessageLocator = By.xpath("//div[contains(text(),'Thanks for your response')] | //div[contains(@class,'freebirdFormviewerViewResponseConfirmationMessage')]");
-        String confirmationText = Wrappers.getElementText(driver, successMessageLocator);
-        System.out.println(confirmationText);
-
-        System.out.println("testCase01 execution completed.");
+        driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
     }
 
     @AfterTest
     public void endTest() {
-        driver.close();
-        driver.quit();
+        if (driver != null) {
+            driver.close();
+            driver.quit();
+        }
     }
 }
